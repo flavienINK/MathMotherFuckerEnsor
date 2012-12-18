@@ -12,6 +12,8 @@ static const uint32_t MIN_LOOP_TIME = 1000/FRAME_RATE;
 static const size_t WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 300;
 static const size_t BYTES_PER_PIXEL = 32;
 
+/* INK */
+
 enum Color{
 	RED = 0,
 	BLUE = 2,
