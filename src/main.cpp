@@ -13,7 +13,49 @@ static const uint32_t MIN_LOOP_TIME = 1000/FRAME_RATE;
 static const size_t WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 300;
 static const size_t BYTES_PER_PIXEL = 32;
 
-/* INK */
+typedef struct
+{
+	char key[SDLK_LAST];
+	int mousex,mousey;
+	int mousexrel,mouseyrel;
+	char mousebuttons[8];
+    char quit;
+} Input;
+
+
+void UpdateEvents(Input* in)
+{
+	SDL_Event event;
+	while(SDL_PollEvent(&event))
+	{
+		switch (event.type)
+		{
+		case SDL_KEYDOWN:
+			in->key[event.key.keysym.sym]=1;
+			break;
+		case SDL_KEYUP:
+			in->key[event.key.keysym.sym]=0;
+			break;
+		case SDL_MOUSEMOTION:
+			in->mousex=event.motion.x;
+			in->mousey=event.motion.y;
+			in->mousexrel=event.motion.xrel;
+			in->mouseyrel=event.motion.yrel;
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			in->mousebuttons[event.button.button]=1;
+			break;
+		case SDL_MOUSEBUTTONUP:
+			in->mousebuttons[event.button.button]=0;
+			break;
+		case SDL_QUIT:
+			in->quit = 1;
+			break;
+		default:
+			break;
+		}
+	}
+}
 
 enum Color{
 	RED = 0,
@@ -73,9 +115,6 @@ int main(int argc, char *argv[]){
 	 Eigen::MatrixXd list1;
 	 Eigen::MatrixXd list2;
 	 Eigen::MatrixXd list3;
-	 kn::loadMatrix(list1, "input/list1.list");
-	 kn::loadMatrix(list2, "input/list2.list");
-	 kn::loadMatrix(list3, "input/list3.list");
 	 
 	 //IF lists are inclued
 	 if (argc <= 7 && argc > 4){
@@ -84,6 +123,7 @@ int main(int argc, char *argv[]){
 		 kn::loadMatrix(list2, "input/" + std::string(argv[5]));
 		 kn::loadMatrix(list3, "input/" + std::string(argv[6]));
 	}
+
 	
 	//Remplir la matrice A pour construire le tensor
 	uint8_t nbPoints = 200;
@@ -96,8 +136,11 @@ int main(int argc, char *argv[]){
 	/**************************************
 	 *  DISPLAY LOOP
 	 * **************************************/
-	 bool loop = true;
-	 while(loop){
+	 
+	Input in;
+	memset(&in,0,sizeof(in));
+	while(!in.key[SDLK_ESCAPE] && !in.quit)
+	{
 		uint32_t start = 0;
 		uint32_t end = 0;
 		uint32_t ellapsedTime = 0;
@@ -129,35 +172,21 @@ int main(int argc, char *argv[]){
 		
 		for(int i=0;i<list3.rows();++i){
 			fill_circle(screen, img3_offset.x + list3(i, 0), list3(i, 1), 3, colors[BLUE]);
-		}
+		}		
 		
 		SDL_Flip(screen);
 		
 		/* EVENT */
-		SDL_Event e;
-		while(SDL_PollEvent(&e)){
-			switch(e.type){
-				//Gestion clavier
-				case SDL_KEYDOWN:
-					switch(e.key.keysym.sym){
-						case SDLK_ESCAPE:
-							loop = false;
-							break;
+		
 
-						default:
-							break;
-					}
-					break;
-
-				case SDL_QUIT:
-					loop = false;
-					break;
-
-				default:
-					break;
-			}			 
-		}
-
+		UpdateEvents(&in);
+		if (in.mousebuttons[SDL_BUTTON_LEFT])
+		{
+			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
+			std::cout << "x = " << in.mousex << " y = " << in.mousey << std::endl;
+			fill_circle(screen, in.mousex, in.mousey, 10, colors[BLUE]);
+		}	
+		
 		/* IDLE */
 
 
