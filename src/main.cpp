@@ -91,7 +91,17 @@ int main(int argc, char *argv[]){
 		}
 	}
 	
+	/* Vector null */
+	Eigen::VectorXd O = Eigen::VectorXd::Zero(28);
 	
+	/* Computing the SVD of A */
+	Eigen::JacobiSVD<MatrixXd> mySVD = A.jacobiSvd(ComputeThinU | ComputeThinV);
+	Eigen::MatrixXd V = mySVD.matrixV();
+	
+	/* Vector T : le tensor */
+	Eigen::VectorXd T = V.col(26);
+	std::cout<<"//-> Vector T [size="<<T.size()<<"]"<<std::endl;
+	std::cout<<T<<std::endl;
 	
 	/**************************************
 	 *  DISPLAY LOOP
