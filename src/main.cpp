@@ -60,7 +60,8 @@ void UpdateEvents(Input* in)
 enum Color{
 	RED = 0,
 	BLUE = 2,
-	GREEN = 1
+	GREEN = 1,
+	PURPLE = 3
 };
 
 int main(int argc, char *argv[]){
@@ -108,7 +109,8 @@ int main(int argc, char *argv[]){
 	 uint32_t colors[] = {
 		0xffff0000,
 		0xff0000ff,
-		0xff00ff00
+		0xff00ff00,
+		0xfff608e3
 	 };
 	 
 	 //Chargement des listes
@@ -141,26 +143,62 @@ int main(int argc, char *argv[]){
 		for(uint32_t i=0;i<2;++i){
 			for(uint32_t l=0;l<2;++l){
 				for(uint32_t k=0;k<3;++k){
-					A(4*p+2*i+l, 9*k+3*l+2) = list1(p, k) * list2(p, i)* list3(p, 2); 
-					A(4*p+2*i+l, 9*k+3*l+i) = list1(p, k) * list2(p, 2)* list3(p, 2); 
-					A(4*p+2*i+l, 9*k+3*2+2) = list1(p, k) * list2(p, i)* list3(p, l); 
-					A(4*p+2*i+l, 9*k+3*2+i) = list1(p, k) * list2(p, 2)* list3(p, l); 
+					A(4*p+2*i+l, 9*k+3*l+2) += list1(p, k) * list2(p, i)* list3(p, 2); 
+					A(4*p+2*i+l, 9*k+3*l+i) += -list1(p, k) * list2(p, 2)* list3(p, 2); 
+					A(4*p+2*i+l, 9*k+3*2+2) += -list1(p, k) * list2(p, i)* list3(p, l); 
+					A(4*p+2*i+l, 9*k+3*2+i) += list1(p, k) * list2(p, 2)* list3(p, l); 
 				}
 			}
 		}
 	}
 	
-	/* Vector null */
-	Eigen::VectorXd O = Eigen::VectorXd::Zero(28);
-	
 	/* Computing the SVD of A */
 	Eigen::JacobiSVD<MatrixXd> mySVD = A.jacobiSvd(ComputeThinU | ComputeThinV);
 	Eigen::MatrixXd V = mySVD.matrixV();
+	std::cout<<"//-> Matrix V [rows="<<V.rows()<<" | cols="<<V.cols()<<"]"<<std::endl;
 	
 	/* Vector T : le tensor */
-	Eigen::VectorXd T = V.col(26);
+	Eigen::VectorXd T = V.transpose().col(26);
 	std::cout<<"//-> Vector T [size="<<T.size()<<"]"<<std::endl;
-	std::cout<<T<<std::endl;
+	std::cout<<T<<std::endl;	
+	
+	/* Transfert */
+	/* Example of two points */
+	Eigen::VectorXd p1(3);
+	Eigen::VectorXd p2(3);
+	p1(0)=211; p1(1)=242; p1(2)=1;
+	p2(0)=219; p2(1)=234; p2(2)=1;
+	
+	/* create the Aprime matrix */
+	Eigen::MatrixXd Aprime = Eigen::MatrixXd::Zero(4, 3);
+	
+	for(uint32_t i=0;i<2;++i){
+		for(uint32_t l=0;l<2;++l){
+			for(uint32_t k=0;k<3;++k){
+				Aprime(2*i+l, l) += p1(k) * (p2(2)*T(9*k+3*2+i) - p2(i)*T(9*k+3*2+2));
+				Aprime(2*i+l, 2) += p1(k) * (p2(i)*T(9*k+3*l+2) - p2(2)*T(9*k+3*l+i));
+			}
+		}
+	}
+	
+	/* Computing the SVD of Aprime */
+	Eigen::JacobiSVD<MatrixXd> trSVD = Aprime.jacobiSvd(ComputeThinU | ComputeThinV);
+	Eigen::MatrixXd trV = trSVD.matrixV();
+	std::cout<<"//-> Matrix trV [rows="<<trV.rows()<<" | cols="<<trV.cols()<<"]"<<std::endl;
+	
+	std::cout<<"/////////////////////////////////////////"<<std::endl;
+	std::cout<<trV<<std::endl;
+	std::cout<<"/////////////////////////////////////////"<<std::endl;
+	
+	Eigen::VectorXd res = trV.transpose().col(2);
+	std::cout<<"//-> Vector T [size="<<res.size()<<"]"<<std::endl;
+	std::cout<<res<<std::endl;
+	
+	res(0) = res(0)/res(2);
+	res(1) = res(1)/res(2);
+	res(2) = 1;
+	std::cout<<"///////////////"<<std::endl;
+	std::cout<<res<<std::endl;
 	
 	/**************************************
 	 *  DISPLAY LOOP
@@ -202,6 +240,11 @@ int main(int argc, char *argv[]){
 		for(int i=0;i<list3.rows();++i){
 			fill_circle(screen, img3_offset.x + list3(i, 0), list3(i, 1), 3, colors[BLUE]);
 		}		
+		
+		/* Points examples */
+		fill_circle(screen, img1_offset.x + p1(0), p1(1), 3, colors[PURPLE]);
+		fill_circle(screen, img2_offset.x + p2(0), p2(1), 3, colors[PURPLE]);
+		//fill_circle(screen, img3_offset.x + res(0), res(1), 3, colors[PURPLE]);
 		
 		SDL_Flip(screen);
 		
