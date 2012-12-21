@@ -67,11 +67,30 @@ int main(int argc, char *argv[]){
 	 kn::loadMatrix(list3, "input/list3.list");
 	
 	//Remplir la matrice A pour construire le tensor
-	uint8_t nbPoints = 200;
-	nbPoints = (uint8_t) list1.rows();
-	if(nbPoints > list2.rows()){ nbPoints = (uint8_t) list2.rows(); }
-	if(nbPoints > list3.rows()){ nbPoints = (uint8_t) list3.rows(); }
+	uint32_t nbPoints = 200;
+	nbPoints = list1.rows();
+	if(nbPoints > list2.rows()){ nbPoints = list2.rows(); }
+	if(nbPoints > list3.rows()){ nbPoints = list3.rows(); }
 	std::cout<<"//-> "<<nbPoints<<std::endl;
+	
+	/* Calcul de la matrice A pour calculer le tenseur */
+	Eigen::MatrixXd A = Eigen::MatrixXd::Zero(4*nbPoints, 27);
+	std::cout<<"//-> Matrix A [rows="<<A.rows()<<" | cols="<<A.cols()<<"]"<<std::endl;
+	
+	
+	for(uint32_t p=0;p<nbPoints;++p){
+		for(uint32_t i=0;i<2;++i){
+			for(uint32_t l=0;l<2;++l){
+				for(uint32_t k=0;k<3;++k){
+					A(4*p+2*i+l, 9*k+3*l+2) = list1(p, k) * list2(p, i)* list3(p, 2); 
+					A(4*p+2*i+l, 9*k+3*l+i) = list1(p, k) * list2(p, 2)* list3(p, 2); 
+					A(4*p+2*i+l, 9*k+3*2+2) = list1(p, k) * list2(p, i)* list3(p, l); 
+					A(4*p+2*i+l, 9*k+3*2+i) = list1(p, k) * list2(p, 2)* list3(p, l); 
+				}
+			}
+		}
+	}
+	
 	
 	
 	/**************************************
