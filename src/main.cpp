@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <stdint.h>
+#include <string>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 
@@ -24,16 +25,26 @@ int main(int argc, char *argv[]){
 	/*******************************************************
 	* PROGRAM INITIALIZATION
 	*******************************************************/
+	
+	//Verification
+	if (argc <= 3){
+		std::cerr<<"[!]-> Error IMAGES is missing. Close program."<<std::endl;
+		return EXIT_FAILURE;
+	}
+		
 	//SDL image
 	if(-1 == IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG)){
 		std::cerr<<"[!]-> Error IMG_INIT. Close program."<<std::endl;
 		return EXIT_FAILURE;
 	}
 	
-	//Load the 3 images
-	SDL_Surface* img1 = IMG_Load("input/image1.jpg");
-	SDL_Surface* img2 = IMG_Load("input/image2.jpg");
-	SDL_Surface* img3 = IMG_Load("input/image3.jpg");
+	//Load the 3 images	
+	std::string image_1 = "input/" + std::string(argv[1]);
+	std::string image_2 = "input/" + std::string(argv[2]);
+	std::string image_3 = "input/" + std::string(argv[3]);
+	SDL_Surface* img1 = IMG_Load(image_1.c_str());
+	SDL_Surface* img2 = IMG_Load(image_2.c_str());
+	SDL_Surface* img3 = IMG_Load(image_3.c_str());
 	if(!img1 || !img2 || !img3){
 		std::cerr<<"[!]-> Error while loading the image. Close the program"<<std::endl;
 		return EXIT_FAILURE;
@@ -58,13 +69,21 @@ int main(int argc, char *argv[]){
 		0xff00ff00
 	 };
 	 
-	 //Chragement des listes
+	 //Chargement des listes
 	 Eigen::MatrixXd list1;
 	 Eigen::MatrixXd list2;
 	 Eigen::MatrixXd list3;
 	 kn::loadMatrix(list1, "input/list1.list");
 	 kn::loadMatrix(list2, "input/list2.list");
 	 kn::loadMatrix(list3, "input/list3.list");
+	 
+	 //IF lists are inclued
+	 if (argc <= 7 && argc > 4){
+		 //Chargement des listes
+		 kn::loadMatrix(list1, "input/" + std::string(argv[4]));
+		 kn::loadMatrix(list2, "input/" + std::string(argv[5]));
+		 kn::loadMatrix(list3, "input/" + std::string(argv[6]));
+	}
 	
 	//Remplir la matrice A pour construire le tensor
 	uint8_t nbPoints = 200;
