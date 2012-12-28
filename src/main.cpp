@@ -103,10 +103,41 @@ const Eigen::VectorXd computeTensor(const Eigen::MatrixXd& list1, const Eigen::M
 	/* Vector T : le tensor */
 	Eigen::VectorXd T = V.col(26);
 	std::cout<<"//-> Vector T [size="<<T.size()<<"]"<<std::endl;
-	std::cout<<T<<std::endl;
 	
-	std::cout<<"//-> TENSOR IS HERE MY FRIEND !"<<std::endl;
+	std::cout<<"//-> TENSOR IS HERE MY FRIEND !"<<std::endl<<std::endl;
 	return T;
+}
+
+/* Do the transfert */
+const Eigen::VectorXd doTransfert(const Eigen::VectorXd& T, const Eigen::VectorXd& p1, const Eigen::VectorXd& p2){
+	std::cout<<"//-> STARTING THE TRANSFERT"<<std::endl;
+	/* create the Aprime matrix */
+	Eigen::MatrixXd Aprime = Eigen::MatrixXd::Zero(4, 2);
+	Eigen::VectorXd res = Eigen::VectorXd::Zero(4);
+	
+	for(uint32_t i=0;i<2;++i){
+		for(uint32_t l=0;l<2;++l){
+			for(uint32_t k=0;k<3;++k){
+				Aprime(2*i+l, l) += p1(k) * (p2(2)*T(9*k+3*2+i) - p2(i)*T(9*k+3*2+2));
+				res(2*i+l) += -p1(k) * (p2(i)*T(9*k+3*l+2) - p2(2)*T(9*k+3*l+i));
+			}
+		}
+	}
+	
+	/* Computing the SVD of Aprime */
+	Eigen::JacobiSVD<MatrixXd> trSVD(Aprime, ComputeThinU | ComputeThinV);
+	
+	Eigen::VectorXd guessPoint = trSVD.solve(res);
+	
+	Eigen::VectorXd p3(3);
+	p3(0) = floor(guessPoint(0));
+	p3(1) = floor(guessPoint(1));
+	p3(2) = 1;
+	std::cout<<"//-> Point 3 [size="<<p3.size()<<"]"<<std::endl;
+	std::cout<<p3<<std::endl;
+	
+	std::cout<<"//-> TRAAAAAAAAAAN-SFERT!!!"<<std::endl<<std::endl;
+	return p3;
 }
 
 int main(int argc, char *argv[]){
@@ -178,38 +209,9 @@ int main(int argc, char *argv[]){
 	/************************************* COMPUTING ***********************/
 	Eigen::VectorXd T = computeTensor(list1, list2, list3);
 	
-	/* Transfert */
-	/* Example of two points */
-	Eigen::VectorXd p1(3);
-	Eigen::VectorXd p2(3);
-	p1(0)=list1(0, 0); p1(1)=list1(0, 1); p1(2)=list1(0, 2);
-	p2(0)=list2(0, 0); p2(1)=list2(0, 1); p2(2)=list2(0, 2);
+	/* Transfert */	
+	Eigen::VectorXd p3 = doTransfert(T, list1.row(2), list2.row(2));
 	
-	/* create the Aprime matrix */
-	Eigen::MatrixXd Aprime = Eigen::MatrixXd::Zero(4, 2);
-	Eigen::VectorXd res = Eigen::VectorXd::Zero(4);
-	
-	for(uint32_t i=0;i<2;++i){
-		for(uint32_t l=0;l<2;++l){
-			for(uint32_t k=0;k<3;++k){
-				Aprime(2*i+l, l) += p1(k) * (p2(2)*T(9*k+3*2+i) - p2(i)*T(9*k+3*2+2));
-				res(2*i+l) += -p1(k) * (p2(i)*T(9*k+3*l+2) - p2(2)*T(9*k+3*l+i));
-			}
-		}
-	}
-	
-	/* Computing the SVD of Aprime */
-	Eigen::JacobiSVD<MatrixXd> trSVD(Aprime, ComputeThinU | ComputeThinV);
-	
-	Eigen::VectorXd guessPoint = trSVD.solve(res);
-	
-	Eigen::VectorXd p3(3);
-	p3(0) = floor(guessPoint(0));
-	p3(1) = floor(guessPoint(1));
-	p3(2) = 1;
-	std::cout<<"///////////////////////"<<std::endl;
-	std::cout<<"//-> Point 3 [size="<<p3.size()<<"]"<<std::endl;
-	std::cout<<p3<<std::endl;
 	/*********************************** END COMPUTING ****************************/
 	
 	
@@ -277,8 +279,8 @@ int main(int argc, char *argv[]){
 		} 
 		
 		/* Points examples */
-		fill_circle(screen, img1_offset.x + p1(0), p1(1), 3, colors[PURPLE]);
-		fill_circle(screen, img2_offset.x + p2(0), p2(1), 3, colors[PURPLE]);
+		fill_circle(screen, img1_offset.x + list1(2, 0), list1(2, 1), 3, colors[PURPLE]);
+		fill_circle(screen, img2_offset.x + list2(2, 0), list2(2, 1), 3, colors[PURPLE]);
 		fill_circle(screen, img3_offset.x + p3(0), p3(1), 3, colors[PURPLE]);
 		
 		SDL_Flip(screen);
