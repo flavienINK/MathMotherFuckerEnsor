@@ -189,8 +189,12 @@ int main(int argc, char *argv[]){
 		0xfff608e3
 	 };
 	 
+	 //Tensor
+	 Eigen::VectorXd tensor;
+	 
 	 //Création des listes
 	 bool listCharged = false;
+	 bool tensorComputed = false;
 	 
 	 Eigen::MatrixXd list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);
 	 Eigen::MatrixXd list2 = Eigen::MatrixXd::Zero(NB_POINTS,3);
@@ -199,21 +203,17 @@ int main(int argc, char *argv[]){
 	 //IF lists are inclued
 	 if (argc <= 7 && argc > 4){
 		 //Chargement des listes
-		 listCharged = true;
-		 
+		 listCharged = true;		 
 		 kn::loadMatrix(list1, "input/" + std::string(argv[4]));
 		 kn::loadMatrix(list2, "input/" + std::string(argv[5]));
 		 kn::loadMatrix(list3, "input/" + std::string(argv[6]));
+		 
+		 tensorComputed = true;
+		 tensor = computeTensor(list1, list2, list3);
 	}
 	
-	/************************************* COMPUTING ***********************/
-	Eigen::VectorXd T = computeTensor(list1, list2, list3);
-	
 	/* Transfert */	
-	Eigen::VectorXd p3 = doTransfert(T, list1.row(2), list2.row(2));
-	
-	/*********************************** END COMPUTING ****************************/
-	
+	//Eigen::VectorXd p3 = doTransfert(T, list1.row(2), list2.row(2));	
 	
 	/**************************************
 	 *  DISPLAY LOOP
@@ -278,11 +278,6 @@ int main(int argc, char *argv[]){
 			}
 		} 
 		
-		/* Points examples */
-		fill_circle(screen, img1_offset.x + list1(2, 0), list1(2, 1), 3, colors[PURPLE]);
-		fill_circle(screen, img2_offset.x + list2(2, 0), list2(2, 1), 3, colors[PURPLE]);
-		fill_circle(screen, img3_offset.x + p3(0), p3(1), 3, colors[PURPLE]);
-		
 		SDL_Flip(screen);
 		
 		/* EVENT */
@@ -346,7 +341,11 @@ int main(int argc, char *argv[]){
 		}	
 		
 		/* IDLE */
-
+		if(!tensorComputed && comptePointDansListe>=NB_POINTS){
+			tensorComputed = true;
+			tensor = computeTensor(list1, list2, list3);
+		}
+		
 
 		end = SDL_GetTicks();
 		ellapsedTime = end - start;
