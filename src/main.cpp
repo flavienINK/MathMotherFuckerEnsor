@@ -1,12 +1,15 @@
 #include <iostream>
 #include <cstdlib>
 #include <stdint.h>
+#include <cmath>
 #include <string>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 
 #include "MathIO.hpp"
 #include "draw.hpp"
+
+#define NB_POINTS 7
 
 static const uint32_t FRAME_RATE = 30;
 static const uint32_t MIN_LOOP_TIME = 1000/FRAME_RATE;
@@ -64,6 +67,8 @@ enum Color{
 	PURPLE = 3
 };
 
+
+
 int main(int argc, char *argv[]){
 	/*******************************************************
 	* PROGRAM INITIALIZATION
@@ -113,26 +118,30 @@ int main(int argc, char *argv[]){
 		0xfff608e3
 	 };
 	 
-	 //Chargement des listes
-	 Eigen::MatrixXd list1;
-	 Eigen::MatrixXd list2;
-	 Eigen::MatrixXd list3;
+	 //Création des listes
+	 bool listCharged = false;
+	 
+	 Eigen::MatrixXd list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);
+	 Eigen::MatrixXd list2 = Eigen::MatrixXd::Zero(NB_POINTS,3);
+	 Eigen::MatrixXd list3 = Eigen::MatrixXd::Zero(NB_POINTS,3);
 	 
 	 //IF lists are inclued
 	 if (argc <= 7 && argc > 4){
 		 //Chargement des listes
+		 listCharged = true;
+		 
 		 kn::loadMatrix(list1, "input/" + std::string(argv[4]));
 		 kn::loadMatrix(list2, "input/" + std::string(argv[5]));
 		 kn::loadMatrix(list3, "input/" + std::string(argv[6]));
 	}
-
 	
+	/************************************* COMPUTING ***********************/
 	//Remplir la matrice A pour construire le tensor
 	uint32_t nbPoints = 200;
 	nbPoints = list1.rows();
 	if(nbPoints > list2.rows()){ nbPoints = list2.rows(); }
 	if(nbPoints > list3.rows()){ nbPoints = list3.rows(); }
-	std::cout<<"//-> "<<nbPoints<<std::endl;
+	//std::cout<<"//-> "<<nbPoints<<std::endl;
 	
 	/* Calcul de la matrice A pour calculer le tenseur */
 	Eigen::MatrixXd A = Eigen::MatrixXd::Zero(4*nbPoints, 27);
@@ -153,56 +162,57 @@ int main(int argc, char *argv[]){
 	}
 	
 	/* Computing the SVD of A */
-	Eigen::JacobiSVD<MatrixXd> mySVD = A.jacobiSvd(ComputeThinU | ComputeThinV);
+	Eigen::JacobiSVD<MatrixXd> mySVD(A, ComputeThinU | ComputeThinV);
 	Eigen::MatrixXd V = mySVD.matrixV();
 	std::cout<<"//-> Matrix V [rows="<<V.rows()<<" | cols="<<V.cols()<<"]"<<std::endl;
 	
 	/* Vector T : le tensor */
-	Eigen::VectorXd T = V.transpose().col(26);
+	Eigen::VectorXd T = V.col(26);
 	std::cout<<"//-> Vector T [size="<<T.size()<<"]"<<std::endl;
-	std::cout<<T<<std::endl;	
+	std::cout<<T<<std::endl;
 	
 	/* Transfert */
 	/* Example of two points */
 	Eigen::VectorXd p1(3);
 	Eigen::VectorXd p2(3);
-	p1(0)=211; p1(1)=242; p1(2)=1;
-	p2(0)=219; p2(1)=234; p2(2)=1;
+	p1(0)=list1(0, 0); p1(1)=list1(0, 1); p1(2)=list1(0, 2);
+	p2(0)=list2(0, 0); p2(1)=list2(0, 1); p2(2)=list2(0, 2);
 	
 	/* create the Aprime matrix */
-	Eigen::MatrixXd Aprime = Eigen::MatrixXd::Zero(4, 3);
+	Eigen::MatrixXd Aprime = Eigen::MatrixXd::Zero(4, 2);
+	Eigen::VectorXd res = Eigen::VectorXd::Zero(4);
 	
 	for(uint32_t i=0;i<2;++i){
 		for(uint32_t l=0;l<2;++l){
 			for(uint32_t k=0;k<3;++k){
 				Aprime(2*i+l, l) += p1(k) * (p2(2)*T(9*k+3*2+i) - p2(i)*T(9*k+3*2+2));
-				Aprime(2*i+l, 2) += p1(k) * (p2(i)*T(9*k+3*l+2) - p2(2)*T(9*k+3*l+i));
+				res(2*i+l) += -p1(k) * (p2(i)*T(9*k+3*l+2) - p2(2)*T(9*k+3*l+i));
 			}
 		}
 	}
 	
 	/* Computing the SVD of Aprime */
-	Eigen::JacobiSVD<MatrixXd> trSVD = Aprime.jacobiSvd(ComputeThinU | ComputeThinV);
-	Eigen::MatrixXd trV = trSVD.matrixV();
-	std::cout<<"//-> Matrix trV [rows="<<trV.rows()<<" | cols="<<trV.cols()<<"]"<<std::endl;
+	Eigen::JacobiSVD<MatrixXd> trSVD(Aprime, ComputeThinU | ComputeThinV);
 	
-	std::cout<<"/////////////////////////////////////////"<<std::endl;
-	std::cout<<trV<<std::endl;
-	std::cout<<"/////////////////////////////////////////"<<std::endl;
+	Eigen::VectorXd guessPoint = trSVD.solve(res);
 	
-	Eigen::VectorXd res = trV.transpose().col(2);
-	std::cout<<"//-> Vector T [size="<<res.size()<<"]"<<std::endl;
-	std::cout<<res<<std::endl;
+	Eigen::VectorXd p3(3);
+	p3(0) = floor(guessPoint(0));
+	p3(1) = floor(guessPoint(1));
+	p3(2) = 1;
+	std::cout<<"///////////////////////"<<std::endl;
+	std::cout<<"//-> Point 3 [size="<<p3.size()<<"]"<<std::endl;
+	std::cout<<p3<<std::endl;
+	/*********************************** COMPUTING ****************************/
 	
-	res(0) = res(0)/res(2);
-	res(1) = res(1)/res(2);
-	res(2) = 1;
-	std::cout<<"///////////////"<<std::endl;
-	std::cout<<res<<std::endl;
 	
 	/**************************************
 	 *  DISPLAY LOOP
 	 * **************************************/
+	 
+	 int compteListe = 0;
+	 int compteItemDansPoint = 0;
+	 int comptePointDansListe = 0;
 	 
 	Input in;
 	memset(&in,0,sizeof(in));
@@ -226,37 +236,104 @@ int main(int argc, char *argv[]){
 		
 		SDL_Rect img3_offset = img2_offset;
 		img3_offset.x += img2->w;
-		SDL_BlitSurface(img3, NULL, screen, &img3_offset);
+		SDL_BlitSurface(img3, NULL, screen, &img3_offset);	
 		
 		//Draw the points
-		for(int i=0;i<list1.rows();++i){
-			fill_circle(screen, img1_offset.x + list1(i, 0), list1(i, 1), 3, colors[RED]);
-		}
+		// ATTENTION BUG ICI
+		if (listCharged == true)
+		{
+			for(int i=0;i<list1.rows();++i){
+				fill_circle(screen, img1_offset.x + list1(i, 0), list1(i, 1), 3, colors[RED]);
+			}
 		
-		for(int i=0;i<list2.rows();++i){
-			fill_circle(screen, img2_offset.x + list2(i, 0), list2(i, 1), 3, colors[GREEN]);
-		}
+			for(int i=0;i<list2.rows();++i){
+				fill_circle(screen, img2_offset.x + list2(i, 0), list2(i, 1), 3, colors[GREEN]);
+			}
 		
-		for(int i=0;i<list3.rows();++i){
-			fill_circle(screen, img3_offset.x + list3(i, 0), list3(i, 1), 3, colors[BLUE]);
-		}		
+			for(int i=0;i<list3.rows();++i){
+				fill_circle(screen, img3_offset.x + list3(i, 0), list3(i, 1), 3, colors[BLUE]);
+			}
+		}
+		else if (listCharged == false && comptePointDansListe >= 1) {
+			//std::cout << "on est ici" << std::endl;
+			for(int i=0;i<comptePointDansListe;++i){
+				fill_circle(screen, list1(i, 0), list1(i, 1), 3, colors[RED]);
+			}
+
+			for(int i=0;i<comptePointDansListe;++i){
+				fill_circle(screen, list2(i, 0), list2(i, 1), 3, colors[GREEN]);
+			}
+			
+			for(int i=0;i<comptePointDansListe;++i){
+				fill_circle(screen, list3(i, 0), list3(i, 1), 3, colors[BLUE]);
+			}
+		} 
 		
 		/* Points examples */
 		fill_circle(screen, img1_offset.x + p1(0), p1(1), 3, colors[PURPLE]);
 		fill_circle(screen, img2_offset.x + p2(0), p2(1), 3, colors[PURPLE]);
-		//fill_circle(screen, img3_offset.x + res(0), res(1), 3, colors[PURPLE]);
+		fill_circle(screen, img3_offset.x + p3(0), p3(1), 3, colors[PURPLE]);
 		
 		SDL_Flip(screen);
 		
 		/* EVENT */
 		
-
 		UpdateEvents(&in);
 		if (in.mousebuttons[SDL_BUTTON_LEFT])
 		{
+			// On clique une fois, donc on remet à 0 l'état du bouton
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
-			std::cout << "x = " << in.mousex << " y = " << in.mousey << std::endl;
-			fill_circle(screen, in.mousex, in.mousey, 10, colors[BLUE]);
+			
+			// Si les listes sont à créer alors
+			if (listCharged == false)
+			{
+				// On incrémente la liste pour commencer à la première list
+				compteListe++;
+			
+				if (comptePointDansListe < NB_POINTS) 
+				{
+					if (compteListe == 1) 
+					{
+						list1(comptePointDansListe, compteItemDansPoint)   = in.mousex; // list1(0,0) = x, => list1(1,0) = x => ...
+						list1(comptePointDansListe, compteItemDansPoint+1) = in.mousey; // list1(0,1) = y, => list1(1,1) = y => ...
+						list1(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...
+				
+						// On remet le compteur des items à 0
+						compteItemDansPoint = 0;
+				
+						std::cout << "on est dans la liste 1" << std::endl;
+					}
+			
+					else if (compteListe == 2) 
+					{
+						list2(comptePointDansListe, compteItemDansPoint)   = in.mousex; // list1(0,0) = x, => list1(1,0) = x => ...
+						list2(comptePointDansListe, compteItemDansPoint+1) = in.mousey; // list1(0,1) = y, => list1(1,1) = y => ...
+						list2(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...
+						
+						// On remet le compteur des items à 0
+						compteItemDansPoint = 0;
+				
+						std::cout << "on est dans la liste 2" << std::endl;
+					}
+					else
+					{
+						list3(comptePointDansListe, compteItemDansPoint)   = in.mousex; // list1(0,0) = x, => list1(1,0) = x => ...
+						list3(comptePointDansListe, compteItemDansPoint+1) = in.mousey; // list1(0,1) = y, => list1(1,1) = y => ...
+						list3(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...
+						
+						// On remet le compteur des items à 0
+						compteItemDansPoint = 0;
+		
+						// On passe au point suivant
+						comptePointDansListe++;
+				
+						// On retourne à la liste1
+						compteListe = 0;
+				
+						std::cout << "on est dans la liste 3" << std::endl;
+					}
+				}
+			}
 		}	
 		
 		/* IDLE */
