@@ -8,6 +8,8 @@
 #include "MathIO.hpp"
 #include "draw.hpp"
 
+#define NB_POINTS 7
+
 static const uint32_t FRAME_RATE = 30;
 static const uint32_t MIN_LOOP_TIME = 1000/FRAME_RATE;
 static const size_t WINDOW_WIDTH = 1200, WINDOW_HEIGHT = 300;
@@ -111,30 +113,33 @@ int main(int argc, char *argv[]){
 		0xff00ff00
 	 };
 	 
-	 //Chargement des listes
-	 Eigen::MatrixXd list1;
-	 Eigen::MatrixXd list2;
-	 Eigen::MatrixXd list3;
+	 //Création des listes
+	 bool listCharged = false;
+	 
+	 Eigen::MatrixXd list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);
+	 Eigen::MatrixXd list2 = Eigen::MatrixXd::Zero(NB_POINTS,3);
+	 Eigen::MatrixXd list3 = Eigen::MatrixXd::Zero(NB_POINTS,3);
 	 
 	 //IF lists are inclued
 	 if (argc <= 7 && argc > 4){
 		 //Chargement des listes
+		 listCharged = true;
+		 
 		 kn::loadMatrix(list1, "input/" + std::string(argv[4]));
 		 kn::loadMatrix(list2, "input/" + std::string(argv[5]));
 		 kn::loadMatrix(list3, "input/" + std::string(argv[6]));
 	}
-
 	
 	//Remplir la matrice A pour construire le tensor
 	uint32_t nbPoints = 200;
 	nbPoints = list1.rows();
 	if(nbPoints > list2.rows()){ nbPoints = list2.rows(); }
 	if(nbPoints > list3.rows()){ nbPoints = list3.rows(); }
-	std::cout<<"//-> "<<nbPoints<<std::endl;
+	//std::cout<<"//-> "<<nbPoints<<std::endl;
 	
 	/* Calcul de la matrice A pour calculer le tenseur */
 	Eigen::MatrixXd A = Eigen::MatrixXd::Zero(4*nbPoints, 27);
-	std::cout<<"//-> Matrix A [rows="<<A.rows()<<" | cols="<<A.cols()<<"]"<<std::endl;
+	//std::cout<<"//-> Matrix A [rows="<<A.rows()<<" | cols="<<A.cols()<<"]"<<std::endl;
 	
 	
 	for(uint32_t p=0;p<nbPoints;++p){
@@ -159,12 +164,16 @@ int main(int argc, char *argv[]){
 	
 	/* Vector T : le tensor */
 	Eigen::VectorXd T = V.col(26);
-	std::cout<<"//-> Vector T [size="<<T.size()<<"]"<<std::endl;
-	std::cout<<T<<std::endl;
+	//std::cout<<"//-> Vector T [size="<<T.size()<<"]"<<std::endl;
+	//std::cout<<T<<std::endl;
 	
 	/**************************************
 	 *  DISPLAY LOOP
 	 * **************************************/
+	 
+	 int compteListe = 0;
+	 int compteItemDansPoint = 0;
+	 int comptePointDansListe = 0;
 	 
 	Input in;
 	memset(&in,0,sizeof(in));
@@ -188,32 +197,99 @@ int main(int argc, char *argv[]){
 		
 		SDL_Rect img3_offset = img2_offset;
 		img3_offset.x += img2->w;
-		SDL_BlitSurface(img3, NULL, screen, &img3_offset);
+		SDL_BlitSurface(img3, NULL, screen, &img3_offset);	
 		
 		//Draw the points
-		for(int i=0;i<list1.rows();++i){
-			fill_circle(screen, img1_offset.x + list1(i, 0), list1(i, 1), 3, colors[RED]);
-		}
+		// ATTENTION BUG ICI
+		if (listCharged == true)
+		{
+			for(int i=0;i<list1.rows();++i){
+				fill_circle(screen, img1_offset.x + list1(i, 0), list1(i, 1), 3, colors[RED]);
+			}
 		
-		for(int i=0;i<list2.rows();++i){
-			fill_circle(screen, img2_offset.x + list2(i, 0), list2(i, 1), 3, colors[GREEN]);
-		}
+			for(int i=0;i<list2.rows();++i){
+				fill_circle(screen, img2_offset.x + list2(i, 0), list2(i, 1), 3, colors[GREEN]);
+			}
 		
-		for(int i=0;i<list3.rows();++i){
-			fill_circle(screen, img3_offset.x + list3(i, 0), list3(i, 1), 3, colors[BLUE]);
-		}		
+			for(int i=0;i<list3.rows();++i){
+				fill_circle(screen, img3_offset.x + list3(i, 0), list3(i, 1), 3, colors[BLUE]);
+			}
+		}
+		else if (listCharged == false && comptePointDansListe >= 1) {
+			//std::cout << "on est ici" << std::endl;
+			for(int i=0;i<comptePointDansListe;++i){
+				fill_circle(screen, list1(i, 0), list1(i, 1), 3, colors[RED]);
+			}
+
+			for(int i=0;i<comptePointDansListe;++i){
+				fill_circle(screen, list2(i, 0), list2(i, 1), 3, colors[GREEN]);
+			}
+			
+			for(int i=0;i<comptePointDansListe;++i){
+				fill_circle(screen, list3(i, 0), list3(i, 1), 3, colors[BLUE]);
+			}
+		} 
 		
 		SDL_Flip(screen);
 		
 		/* EVENT */
 		
-
 		UpdateEvents(&in);
 		if (in.mousebuttons[SDL_BUTTON_LEFT])
 		{
+			// On clique une fois, donc on remet à 0 l'état du bouton
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
-			std::cout << "x = " << in.mousex << " y = " << in.mousey << std::endl;
-			fill_circle(screen, in.mousex, in.mousey, 10, colors[BLUE]);
+			
+			// Si les listes sont à créer alors
+			if (listCharged == false)
+			{
+				// On incrémente la liste pour commencer à la première list
+				compteListe++;
+			
+				if (comptePointDansListe < NB_POINTS) 
+				{
+					if (compteListe == 1) 
+					{
+						list1(comptePointDansListe, compteItemDansPoint)   = in.mousex; // list1(0,0) = x, => list1(1,0) = x => ...
+						list1(comptePointDansListe, compteItemDansPoint+1) = in.mousey; // list1(0,1) = y, => list1(1,1) = y => ...
+						list1(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...
+				
+						// On remet le compteur des items à 0
+						compteItemDansPoint = 0;
+				
+						std::cout << "on est dans la liste 1" << std::endl;
+					}
+			
+					else if (compteListe == 2) 
+					{
+						list2(comptePointDansListe, compteItemDansPoint)   = in.mousex; // list1(0,0) = x, => list1(1,0) = x => ...
+						list2(comptePointDansListe, compteItemDansPoint+1) = in.mousey; // list1(0,1) = y, => list1(1,1) = y => ...
+						list2(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...
+						
+						// On remet le compteur des items à 0
+						compteItemDansPoint = 0;
+				
+						std::cout << "on est dans la liste 2" << std::endl;
+					}
+					else
+					{
+						list3(comptePointDansListe, compteItemDansPoint)   = in.mousex; // list1(0,0) = x, => list1(1,0) = x => ...
+						list3(comptePointDansListe, compteItemDansPoint+1) = in.mousey; // list1(0,1) = y, => list1(1,1) = y => ...
+						list3(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...
+						
+						// On remet le compteur des items à 0
+						compteItemDansPoint = 0;
+		
+						// On passe au point suivant
+						comptePointDansListe++;
+				
+						// On retourne à la liste1
+						compteListe = 0;
+				
+						std::cout << "on est dans la liste 3" << std::endl;
+					}
+				}
+			}
 		}	
 		
 		/* IDLE */
