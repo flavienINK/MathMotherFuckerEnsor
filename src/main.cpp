@@ -123,30 +123,33 @@ int main(int argc, char *argv[]){
 	 leydef::Tensor tensor;
 	 
 	 //Création des listes
-	 leydef::PointList ptList1(colors[RED]);
-	 std::cout<<ptList1.getSize()<<std::endl;
 	 
 	 bool listCharged = false;
 	 bool tensorComputed = false;
 	 
-	 Eigen::MatrixXd list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);
+	 /*TR Eigen::MatrixXd list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);
 	 Eigen::MatrixXd list2 = Eigen::MatrixXd::Zero(NB_POINTS,3);
-	 Eigen::MatrixXd list3 = Eigen::MatrixXd::Zero(NB_POINTS,3);
+	 Eigen::MatrixXd list3 = Eigen::MatrixXd::Zero(NB_POINTS,3);*/
+	 
+	 leydef::PointList equiv1(colors[RED]);
+	 leydef::PointList equiv2(colors[GREEN]);
+	 leydef::PointList equiv3(colors[BLUE]);
+	 
+	 leydef::PointList running1(colors[PURPLE]);
+	 leydef::PointList running2(colors[PURPLE]);
+	 leydef::PointList running3(colors[PURPLE]);
 	 
 	 //IF lists are inclued
 	 if (argc <= 7 && argc > 4){
 		//Chargement des listes
-		listCharged = true;		 
-		kn::loadMatrix(list1, "input/" + std::string(argv[4]));
-		kn::loadMatrix(list2, "input/" + std::string(argv[5]));
-		kn::loadMatrix(list3, "input/" + std::string(argv[6]));
+		listCharged = true;
+		 
+		equiv1.load("input/" + std::string(argv[4]));
+		equiv2.load("input/" + std::string(argv[5]));
+		equiv3.load("input/" + std::string(argv[6]));
 		 
 		tensorComputed = true;
-		tensor.compute(list1, list2, list3);
-		 
-		list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);
-		list2 = Eigen::MatrixXd::Zero(NB_POINTS,3);
-		list3 = Eigen::MatrixXd::Zero(NB_POINTS,3);
+		tensor.compute(equiv1.getData(), equiv2.getData(), equiv3.getData());
 	}	
 	
 	/**************************************
@@ -154,8 +157,6 @@ int main(int argc, char *argv[]){
 	 * **************************************/
 	 
 	int compteListe = 1;
-	int compteItemDansPoint = 0;
-	int comptePointDansListe = 0;
 	 
 	Eigen::VectorXd firstPoint(3);
 	Eigen::VectorXd secondPoint(3);
@@ -185,21 +186,12 @@ int main(int argc, char *argv[]){
 		img3_offset.x += img2->w;
 		SDL_BlitSurface(img3, NULL, screen, &img3_offset);	
 		
-		//Draw the points
-		if (comptePointDansListe >= 1) 
-		{
-			for(int i=0;i<comptePointDansListe;++i){
-				fill_circle(screen, list1(i, 0), list1(i, 1), 3, colors[RED]);
-			}
-
-			for(int i=0;i<comptePointDansListe;++i){
-				fill_circle(screen, list2(i, 0) + img1->w, list2(i, 1), 3, colors[GREEN]);
-			}
-			
-			for(int i=0;i<comptePointDansListe;++i){
-				fill_circle(screen, list3(i, 0) + img1->w + img2->w, list3(i, 1), 3, colors[BLUE]);
-			}
-		}
+		equiv1.draw(screen);
+		equiv2.draw(screen);
+		equiv3.draw(screen);
+		running1.draw(screen);
+		running2.draw(screen);
+		running3.draw(screen);
 		
 		SDL_Flip(screen);
 		
@@ -209,117 +201,71 @@ int main(int argc, char *argv[]){
 		{
 			// On clique une fois, donc on remet à 0 l'état du bouton
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
-						
-			if (comptePointDansListe < NB_POINTS) 
+			
+			/* Evaluer sur quelle image on doit cliquer */
+			if (compteListe == 1)
 			{
-				//std::cout << "X = " << in.mousex << std::endl;
-				if (compteListe == 1) 
+				// On vérifie que le clic se situe bien dans l'image 1
+				if (in.mousex <= img1->w)
 				{
-					// On vérifie que le clic se situe bien dans l'image 1
-					if (in.mousex <= img1->w)
-					{
-						//std::cout << "on est dans la liste 1" << std::endl;
-						//std::cout << "Taille de l'image 1 : " << img1->w << std::endl;
-						list1(comptePointDansListe, compteItemDansPoint)   = in.mousex; // list1(0,0) = x, => list1(1,0) = x => ...
-						list1(comptePointDansListe, compteItemDansPoint+1) = in.mousey; // list1(0,1) = y, => list1(1,1) = y => ...
-						list1(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...
-			
-						// On remet le compteur des items à 0
-						compteItemDansPoint = 0;
-						
-						compteListe++;
-						
-						if (listCharged == true)
-						{
-							// On génère le premier point
-							firstPoint(0) = in.mousex;
-							firstPoint(1) = in.mousey;
-							firstPoint(2) = 1;
-						}
+					// On génère le premier point
+					firstPoint(0) = in.mousex;
+					firstPoint(1) = in.mousey;
+					firstPoint(2) = 1;
+					
+					if(listCharged == false){
+						equiv1.addPoint(firstPoint);
+					}else{
+						running1.addPoint(firstPoint);
 					}
+					compteListe++;
 				}
-		
-				else if (compteListe == 2) 
-				{
-					// On vérifie que le clic se situe bien dans l'image 2
-					if (in.mousex <= img1->w + img2->w && in.mousex > img1->w)
-					{
-						
-						//std::cout << "on est dans la liste 2" << std::endl;
-						//std::cout << "Taille de l'image 2 : " << img2->w << std::endl;
-						list2(comptePointDansListe, compteItemDansPoint)   = in.mousex - img1->w; // list1(0,0) = x, => list1(1,0) = x => ...
-						list2(comptePointDansListe, compteItemDansPoint+1) = in.mousey; // list1(0,1) = y, => list1(1,1) = y => ...
-						list2(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...
-					
-						// On remet le compteur des items à 0
-						compteItemDansPoint = 0;
-						
-						compteListe++;
-						
-						// Si on suffisament de points pour le tenseur, alors on peut calculer le nouveau point
-						// sur l'image 3 à l'aide des deux premiers points cliqués
-						if (listCharged == true)
-						{								
-
-							// On génère le second point
-							secondPoint(0) = in.mousex - img1->w;
-							secondPoint(1) = in.mousey;
-							secondPoint(2) = 1;
-							
-							//std::cout << "x1 = " << firstPoint(0) << " y1 = " << firstPoint(1) << std::endl;
-							//std::cout << "x2 = " << secondPoint(0) << " y2 = " << secondPoint(1) << std::endl;
-							
-							thirdPoint = tensor.doTransfert(firstPoint, secondPoint);
-							
-							list3(comptePointDansListe, compteItemDansPoint)   = thirdPoint(0);
-							list3(comptePointDansListe, compteItemDansPoint+1) = thirdPoint(1); // list1(0,1) = y, => list1(1,1) = y => ...
-							list3(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...
-						
-							// On passe au point suivant
-							comptePointDansListe++;
-			
-							// On retourne à la liste1
-							compteListe = 1;
-						}
-						
-					}
-					
-				}
-				else
-				{
-					// On vérifie que le clic se situe bien dans l'image 3
-					if (in.mousex <= img1->w + img2->w + img3->w && in.mousex > img1->w + img2->w)
-					{
-						list3(comptePointDansListe, compteItemDansPoint)   = in.mousex - img1->w - img2->w; // list1(0,0) = x, => list1(1,0) = x => ...
-						list3(comptePointDansListe, compteItemDansPoint+1) = in.mousey; // list1(0,1) = y, => list1(1,1) = y => ...
-						list3(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...
-					
-						// On remet le compteur des items à 0
-						compteItemDansPoint = 0;
+			}
 	
-						// On passe au point suivant
-						comptePointDansListe++;
-			
-						// On retourne à la liste1
+			else if (compteListe == 2) 
+			{
+				// On vérifie que le clic se situe bien dans l'image 2
+				if (in.mousex <= img1->w + img2->w && in.mousex > img1->w)
+				{	
+					// On génère le second point
+					secondPoint(0) = in.mousex - img1->w;
+					secondPoint(1) = in.mousey;
+					secondPoint(2) = 1;
+					
+					if (listCharged == false){
+						equiv2.addPoint(secondPoint);
+						compteListe++;
+					}else{
+						running2.addPoint(secondPoint);
+						thirdPoint = tensor.doTransfert(firstPoint, secondPoint);
+						running3.addPoint(thirdPoint);
 						compteListe = 1;
-					}
+					}						
+				}
+			}
+			else
+			{
+				// On vérifie que le clic se situe bien dans l'image 3
+				if (in.mousex <= img1->w + img2->w + img3->w && in.mousex > img1->w + img2->w)
+				{
+					thirdPoint(0) = in.mousex - img1->w - img2->w;
+					thirdPoint(1) = in.mousey;
+					thirdPoint(2) = 1;
+					equiv3.addPoint(thirdPoint);
+		
+					// On retourne à aux listes 1
+					compteListe = 1;
 				}
 			}
 		}	
 		
 		/* IDLE */
-		if(!tensorComputed && comptePointDansListe >= NB_POINTS_NEEDED)
+		if(!tensorComputed && equiv1.getSize() >= NB_POINTS_NEEDED && equiv2.getSize() >= NB_POINTS_NEEDED && equiv3.getSize() >= NB_POINTS_NEEDED)
 		{
 			tensorComputed = true;
-			tensor.compute(list1, list2, list3);
-			
-			// On réinitialise les listes après avoir fait le tensor
-			list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);
-			list2 = Eigen::MatrixXd::Zero(NB_POINTS,3);
-			list3 = Eigen::MatrixXd::Zero(NB_POINTS,3);
+			tensor.compute(equiv1.getData(), equiv2.getData(), equiv3.getData());
 			
 			listCharged = true;
-			comptePointDansListe = 0;
 		}
 		
 
