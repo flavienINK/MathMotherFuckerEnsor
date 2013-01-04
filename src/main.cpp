@@ -9,6 +9,7 @@
 #include "MathIO.hpp"
 #include "draw.hpp"
 #include "Tensor.hpp"
+#include "PointList.hpp"
 
 #define NB_POINTS_NEEDED 7
 #define NB_POINTS 10
