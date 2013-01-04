@@ -69,46 +69,6 @@ enum Color{
 	PURPLE = 3
 };
 
-/* Computing the tensor */
-const Eigen::VectorXd computeTensor(const Eigen::MatrixXd& list1, const Eigen::MatrixXd& list2, const Eigen::MatrixXd& list3){
-	//Remplir la matrice A pour construire le tensor
-	std::cout<<"//-> STARTING THE COMPUTING OF THE TENSOR"<<std::endl;
-	uint32_t nbPoints = 200;
-	nbPoints = list1.rows();
-	if(nbPoints > list2.rows()){ nbPoints = list2.rows(); }
-	if(nbPoints > list3.rows()){ nbPoints = list3.rows(); }
-	std::cout<<"//-> Nb Points :"<<nbPoints<<std::endl;
-	
-	/* Calcul de la matrice A pour calculer le tenseur */
-	Eigen::MatrixXd A = Eigen::MatrixXd::Zero(4*nbPoints, 27);
-	std::cout<<"//-> Matrix A [rows="<<A.rows()<<" | cols="<<A.cols()<<"]"<<std::endl;
-	
-	for(uint32_t p=0;p<nbPoints;++p){
-		for(uint32_t i=0;i<2;++i){
-			for(uint32_t l=0;l<2;++l){
-				for(uint32_t k=0;k<3;++k){
-					A(4*p+2*i+l, 9*k+3*l+2) += list1(p, k) * list2(p, i)* list3(p, 2); 
-					A(4*p+2*i+l, 9*k+3*l+i) += -list1(p, k) * list2(p, 2)* list3(p, 2); 
-					A(4*p+2*i+l, 9*k+3*2+2) += -list1(p, k) * list2(p, i)* list3(p, l); 
-					A(4*p+2*i+l, 9*k+3*2+i) += list1(p, k) * list2(p, 2)* list3(p, l); 
-				}
-			}
-		}
-	}
-	
-	/* Computing the SVD of A */
-	Eigen::JacobiSVD<MatrixXd> mySVD(A, ComputeThinU | ComputeThinV);
-	Eigen::MatrixXd V = mySVD.matrixV();
-	std::cout<<"//-> Matrix V [rows="<<V.rows()<<" | cols="<<V.cols()<<"]"<<std::endl;
-	
-	/* Vector T : le tensor */
-	Eigen::VectorXd T = V.col(26);
-	std::cout<<"//-> Vector T [size="<<T.size()<<"]"<<std::endl;
-	
-	std::cout<<"//-> TENSOR IS HERE MY FRIEND !"<<std::endl<<std::endl;
-	return T;
-}
-
 /* Do the transfert */
 const Eigen::VectorXd doTransfert(const Eigen::VectorXd& T, const Eigen::VectorXd& p1, const Eigen::VectorXd& p2){
 	//std::cout<<"//-> STARTING THE TRANSFERT"<<std::endl;
@@ -191,7 +151,7 @@ int main(int argc, char *argv[]){
 	 };
 	 
 	 //Tensor
-	 Eigen::VectorXd tensor;
+	 Tensor tensor;
 	 
 	 //Création des listes
 	 bool listCharged = false;
@@ -210,7 +170,7 @@ int main(int argc, char *argv[]){
 		kn::loadMatrix(list3, "input/" + std::string(argv[6]));
 		 
 		tensorComputed = true;
-		tensor = computeTensor(list1, list2, list3);
+		tensor.compute(list1, list2, list3);
 		 
 		list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);
 		list2 = Eigen::MatrixXd::Zero(NB_POINTS,3);
@@ -338,7 +298,7 @@ int main(int argc, char *argv[]){
 							//std::cout << "x1 = " << firstPoint(0) << " y1 = " << firstPoint(1) << std::endl;
 							//std::cout << "x2 = " << secondPoint(0) << " y2 = " << secondPoint(1) << std::endl;
 							
-							thirdPoint = doTransfert(tensor, firstPoint, secondPoint);
+							//thirdPoint = doTransfert(tensor, firstPoint, secondPoint);
 							
 							list3(comptePointDansListe, compteItemDansPoint)   = thirdPoint(0);
 							list3(comptePointDansListe, compteItemDansPoint+1) = thirdPoint(1); // list1(0,1) = y, => list1(1,1) = y => ...
@@ -382,7 +342,7 @@ int main(int argc, char *argv[]){
 		if(!tensorComputed && comptePointDansListe >= NB_POINTS_NEEDED)
 		{
 			tensorComputed = true;
-			tensor = computeTensor(list1, list2, list3);
+			tensor.compute(list1, list2, list3);
 			
 			// On réinitialise les listes après avoir fait le tensor
 			list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);

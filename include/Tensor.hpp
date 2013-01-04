@@ -9,6 +9,7 @@ class Tensor{
 	public:
 		Tensor();
 		~Tensor();
+		void compute(const Eigen::MatrixXd& list1, const Eigen::MatrixXd& list2, const Eigen::MatrixXd& list3);
 		
 	private:
 		Eigen::VectorXd m_values;
