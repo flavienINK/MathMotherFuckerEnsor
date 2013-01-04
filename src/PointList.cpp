@@ -65,10 +65,10 @@ namespace leydef{
 		return m_points.size();
 	}
 	
-	void PointList::draw(SDL_Surface* screen){
+	void PointList::draw(SDL_Surface* screen, int offsetX){
 		for(std::vector<VectorXd>::iterator i=m_points.begin();i!=m_points.end();++i){
 			Eigen::VectorXd tmpVec = *i;
-			fill_circle(screen, tmpVec(0), tmpVec(1), 3, m_color);
+			fill_circle(screen, offsetX + tmpVec(0), tmpVec(1), 3, m_color);
 		}
 	}
 }

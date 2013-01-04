@@ -186,12 +186,12 @@ int main(int argc, char *argv[]){
 		img3_offset.x += img2->w;
 		SDL_BlitSurface(img3, NULL, screen, &img3_offset);	
 		
-		equiv1.draw(screen);
-		equiv2.draw(screen);
-		equiv3.draw(screen);
-		running1.draw(screen);
-		running2.draw(screen);
-		running3.draw(screen);
+		equiv1.draw(screen, img1_offset.x);
+		equiv2.draw(screen, img2_offset.x);
+		equiv3.draw(screen, img3_offset.x);
+		running1.draw(screen, img1_offset.x);
+		running2.draw(screen, img2_offset.x);
+		running3.draw(screen, img3_offset.x);
 		
 		SDL_Flip(screen);
 		
