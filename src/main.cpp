@@ -119,7 +119,7 @@ int main(int argc, char *argv[]){
 	 };
 	 
 	 //Tensor
-	 Tensor tensor;
+	 leydef::Tensor tensor;
 	 
 	 //Création des listes
 	 bool listCharged = false;
