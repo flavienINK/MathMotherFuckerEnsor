@@ -15,6 +15,7 @@ namespace leydef{
 			~PointList();
 			void load(const std::string& filename);
 			void save(const std::string& filemane);
+			const Eigen::MatrixXd getData();
 			int getSize() const;
 			void addPoint(const Eigen::VectorXd& newPoint);
 			void draw(SDL_Surface* screen);
