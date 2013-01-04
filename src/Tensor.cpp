@@ -64,8 +64,8 @@ namespace leydef{
 		Eigen::VectorXd guessPoint = trSVD.solve(res);
 		
 		Eigen::VectorXd p3(3);
-		p3(0) = floor(guessPoint(0));
-		p3(1) = floor(guessPoint(1));
+		p3(0) = guessPoint(0);
+		p3(1) = guessPoint(1);
 		p3(2) = 1;
 		
 		return p3;
