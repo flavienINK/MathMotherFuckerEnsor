@@ -41,3 +41,30 @@ void Tensor::compute(const Eigen::MatrixXd& list1, const Eigen::MatrixXd& list2,
 	/* The tensor */
 	m_values = V.col(26);
 }
+
+Eigen::VectorXd Tensor::doTransfert(const Eigen::VectorXd& p1, const Eigen::VectorXd& p2) const{
+	/* create the Aprime matrix */
+	Eigen::MatrixXd Aprime = Eigen::MatrixXd::Zero(4, 2);
+	Eigen::VectorXd res = Eigen::VectorXd::Zero(4);
+	
+	for(uint32_t i=0;i<2;++i){
+		for(uint32_t l=0;l<2;++l){
+			for(uint32_t k=0;k<3;++k){
+				Aprime(2*i+l, l) += p1(k) * (p2(2)*m_values(9*k+3*2+i) - p2(i)*m_values(9*k+3*2+2));
+				res(2*i+l) += -p1(k) * (p2(i)*m_values(9*k+3*l+2) - p2(2)*m_values(9*k+3*l+i));
+			}
+		}
+	}
+	
+	/* Computing the SVD of Aprime */
+	Eigen::JacobiSVD<Eigen::MatrixXd> trSVD(Aprime, Eigen::ComputeThinU | Eigen::ComputeThinV);
+	
+	Eigen::VectorXd guessPoint = trSVD.solve(res);
+	
+	Eigen::VectorXd p3(3);
+	p3(0) = floor(guessPoint(0));
+	p3(1) = floor(guessPoint(1));
+	p3(2) = 1;
+	
+	return p3;
+}

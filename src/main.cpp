@@ -69,38 +69,6 @@ enum Color{
 	PURPLE = 3
 };
 
-/* Do the transfert */
-const Eigen::VectorXd doTransfert(const Eigen::VectorXd& T, const Eigen::VectorXd& p1, const Eigen::VectorXd& p2){
-	//std::cout<<"//-> STARTING THE TRANSFERT"<<std::endl;
-	/* create the Aprime matrix */
-	Eigen::MatrixXd Aprime = Eigen::MatrixXd::Zero(4, 2);
-	Eigen::VectorXd res = Eigen::VectorXd::Zero(4);
-	
-	for(uint32_t i=0;i<2;++i){
-		for(uint32_t l=0;l<2;++l){
-			for(uint32_t k=0;k<3;++k){
-				Aprime(2*i+l, l) += p1(k) * (p2(2)*T(9*k+3*2+i) - p2(i)*T(9*k+3*2+2));
-				res(2*i+l) += -p1(k) * (p2(i)*T(9*k+3*l+2) - p2(2)*T(9*k+3*l+i));
-			}
-		}
-	}
-	
-	/* Computing the SVD of Aprime */
-	Eigen::JacobiSVD<MatrixXd> trSVD(Aprime, ComputeThinU | ComputeThinV);
-	
-	Eigen::VectorXd guessPoint = trSVD.solve(res);
-	
-	Eigen::VectorXd p3(3);
-	p3(0) = floor(guessPoint(0));
-	p3(1) = floor(guessPoint(1));
-	p3(2) = 1;
-	//std::cout<<"//-> Point 3 [size="<<p3.size()<<"]"<<std::endl;
-	//std::cout<<p3<<std::endl;
-	
-	//std::cout<<"//-> TRAAAAAAAAAAN-SFERT OWI OWI OWI!!!"<<std::endl<<std::endl;
-	return p3;
-}
-
 int main(int argc, char *argv[]){
 	/*******************************************************
 	* PROGRAM INITIALIZATION
@@ -272,7 +240,6 @@ int main(int argc, char *argv[]){
 					// On vérifie que le clic se situe bien dans l'image 2
 					if (in.mousex <= img1->w + img2->w && in.mousex > img1->w)
 					{
-						std::cout << comptePointDansListe + 1 << "ème points" << std::endl;
 						
 						//std::cout << "on est dans la liste 2" << std::endl;
 						//std::cout << "Taille de l'image 2 : " << img2->w << std::endl;
@@ -298,7 +265,7 @@ int main(int argc, char *argv[]){
 							//std::cout << "x1 = " << firstPoint(0) << " y1 = " << firstPoint(1) << std::endl;
 							//std::cout << "x2 = " << secondPoint(0) << " y2 = " << secondPoint(1) << std::endl;
 							
-							//thirdPoint = doTransfert(tensor, firstPoint, secondPoint);
+							thirdPoint = tensor.doTransfert(firstPoint, secondPoint);
 							
 							list3(comptePointDansListe, compteItemDansPoint)   = thirdPoint(0);
 							list3(comptePointDansListe, compteItemDansPoint+1) = thirdPoint(1); // list1(0,1) = y, => list1(1,1) = y => ...
@@ -319,8 +286,6 @@ int main(int argc, char *argv[]){
 					// On vérifie que le clic se situe bien dans l'image 3
 					if (in.mousex <= img1->w + img2->w + img3->w && in.mousex > img1->w + img2->w)
 					{
-						//std::cout << "on est dans la liste 3" << std::endl;
-						//std::cout << "Taille de l'image 3 : " << img1->w << std::endl;
 						list3(comptePointDansListe, compteItemDansPoint)   = in.mousex - img1->w - img2->w; // list1(0,0) = x, => list1(1,0) = x => ...
 						list3(comptePointDansListe, compteItemDansPoint+1) = in.mousey; // list1(0,1) = y, => list1(1,1) = y => ...
 						list3(comptePointDansListe, compteItemDansPoint+2) = 1;         // list1(0,2) = 1, => list1(1,2) = 1 => ...

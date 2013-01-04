@@ -10,6 +10,7 @@ class Tensor{
 		Tensor();
 		~Tensor();
 		void compute(const Eigen::MatrixXd& list1, const Eigen::MatrixXd& list2, const Eigen::MatrixXd& list3);
+		Eigen::VectorXd doTransfert(const Eigen::VectorXd& p1, const Eigen::VectorXd& p2) const;
 		
 	private:
 		Eigen::VectorXd m_values;
