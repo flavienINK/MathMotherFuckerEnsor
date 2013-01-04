@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <Eigen/Dense>
+#include <SDL/SDL.h>
 
 namespace leydef{
 
@@ -16,6 +17,7 @@ namespace leydef{
 			void save(const std::string& filemane);
 			int getSize() const;
 			void addPoint(const Eigen::VectorXd& newPoint);
+			void draw(SDL_Surface* screen);
 		
 		private:
 			std::vector<Eigen::VectorXd> m_points;

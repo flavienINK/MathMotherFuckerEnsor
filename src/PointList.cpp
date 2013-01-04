@@ -4,8 +4,10 @@
 #include <vector>
 #include <stdint.h>
 #include <Eigen/Dense>
+#include <SDL/SDL.h>
 
 #include "MathIO.hpp"
+#include "draw.hpp"
 
 namespace leydef{
 	
@@ -50,4 +52,10 @@ namespace leydef{
 		return m_points.size();
 	}
 	
+	void PointList::draw(SDL_Surface* screen){
+		for(std::vector<VectorXd>::iterator i=m_points.begin();i!=m_points.end();++i){
+			Eigen::VectorXd tmpVec = *i;
+			fill_circle(screen, tmpVec(0), tmpVec(1), 3, m_color);
+		}
+	}
 }
