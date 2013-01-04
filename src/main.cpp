@@ -8,6 +8,7 @@
 
 #include "MathIO.hpp"
 #include "draw.hpp"
+#include "Tensor.hpp"
 
 #define NB_POINTS_NEEDED 7
 #define NB_POINTS 10
@@ -214,10 +215,7 @@ int main(int argc, char *argv[]){
 		list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);
 		list2 = Eigen::MatrixXd::Zero(NB_POINTS,3);
 		list3 = Eigen::MatrixXd::Zero(NB_POINTS,3);
-	}
-	
-	/* Transfert */	
-	//Eigen::VectorXd p3 = doTransfert(T, list1.row(2), list2.row(2));	
+	}	
 	
 	/**************************************
 	 *  DISPLAY LOOP
