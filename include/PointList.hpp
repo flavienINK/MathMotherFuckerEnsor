@@ -11,6 +11,7 @@ namespace leydef{
 		public:
 			PointList(uint32_t color);
 			~PointList();
+			int getSize() const;
 		
 		private:
 			std::vector<Eigen::VectorXd> m_points;

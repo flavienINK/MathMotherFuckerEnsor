@@ -123,6 +123,9 @@ int main(int argc, char *argv[]){
 	 leydef::Tensor tensor;
 	 
 	 //Création des listes
+	 leydef::PointList ptList1(colors[RED]);
+	 std::cout<<ptList1.getSize()<<std::endl;
+	 
 	 bool listCharged = false;
 	 bool tensorComputed = false;
 	 

@@ -8,4 +8,8 @@ namespace leydef{
 	PointList::~PointList(){
 	}
 	
+	int PointList::getSize() const{
+		return m_points.size();
+	}
+	
 }
