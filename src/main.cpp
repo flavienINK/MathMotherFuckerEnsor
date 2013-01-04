@@ -127,14 +127,12 @@ int main(int argc, char *argv[]){
 	 bool listCharged = false;
 	 bool tensorComputed = false;
 	 
-	 /*TR Eigen::MatrixXd list1 = Eigen::MatrixXd::Zero(NB_POINTS,3);
-	 Eigen::MatrixXd list2 = Eigen::MatrixXd::Zero(NB_POINTS,3);
-	 Eigen::MatrixXd list3 = Eigen::MatrixXd::Zero(NB_POINTS,3);*/
-	 
+	 /* Lists of points used for building the Tensor */
 	 leydef::PointList equiv1(colors[RED]);
 	 leydef::PointList equiv2(colors[GREEN]);
 	 leydef::PointList equiv3(colors[BLUE]);
 	 
+	 /* Lists of points generate by the user for transfering */
 	 leydef::PointList running1(colors[PURPLE]);
 	 leydef::PointList running2(colors[PURPLE]);
 	 leydef::PointList running3(colors[PURPLE]);
@@ -158,9 +156,8 @@ int main(int argc, char *argv[]){
 	 
 	int compteListe = 1;
 	 
-	Eigen::VectorXd firstPoint(3);
-	Eigen::VectorXd secondPoint(3);
-	Eigen::VectorXd thirdPoint(3);
+	Eigen::VectorXd clickedPoint(3);
+	Eigen::VectorXd guessedPoint(3);
 	 
 	Input in;
 	memset(&in,0,sizeof(in));
@@ -186,6 +183,7 @@ int main(int argc, char *argv[]){
 		img3_offset.x += img2->w;
 		SDL_BlitSurface(img3, NULL, screen, &img3_offset);	
 		
+		//Drawing the lists
 		equiv1.draw(screen, img1_offset.x);
 		equiv2.draw(screen, img2_offset.x);
 		equiv3.draw(screen, img3_offset.x);
@@ -209,14 +207,14 @@ int main(int argc, char *argv[]){
 				if (in.mousex <= img1->w)
 				{
 					// On génère le premier point
-					firstPoint(0) = in.mousex;
-					firstPoint(1) = in.mousey;
-					firstPoint(2) = 1;
+					clickedPoint(0) = in.mousex;
+					clickedPoint(1) = in.mousey;
+					clickedPoint(2) = 1;
 					
 					if(listCharged == false){
-						equiv1.addPoint(firstPoint);
+						equiv1.addPoint(clickedPoint);
 					}else{
-						running1.addPoint(firstPoint);
+						running1.addPoint(clickedPoint);
 					}
 					compteListe++;
 				}
@@ -228,17 +226,17 @@ int main(int argc, char *argv[]){
 				if (in.mousex <= img1->w + img2->w && in.mousex > img1->w)
 				{	
 					// On génère le second point
-					secondPoint(0) = in.mousex - img1->w;
-					secondPoint(1) = in.mousey;
-					secondPoint(2) = 1;
+					clickedPoint(0) = in.mousex - img1->w;
+					clickedPoint(1) = in.mousey;
+					clickedPoint(2) = 1;
 					
 					if (listCharged == false){
-						equiv2.addPoint(secondPoint);
+						equiv2.addPoint(clickedPoint);
 						compteListe++;
 					}else{
-						running2.addPoint(secondPoint);
-						thirdPoint = tensor.doTransfert(firstPoint, secondPoint);
-						running3.addPoint(thirdPoint);
+						running2.addPoint(clickedPoint);
+						guessedPoint = tensor.doTransfert(running1.getLastPoint(), running2.getLastPoint());
+						running3.addPoint(guessedPoint);
 						compteListe = 1;
 					}						
 				}
@@ -248,10 +246,10 @@ int main(int argc, char *argv[]){
 				// On vérifie que le clic se situe bien dans l'image 3
 				if (in.mousex <= img1->w + img2->w + img3->w && in.mousex > img1->w + img2->w)
 				{
-					thirdPoint(0) = in.mousex - img1->w - img2->w;
-					thirdPoint(1) = in.mousey;
-					thirdPoint(2) = 1;
-					equiv3.addPoint(thirdPoint);
+					clickedPoint(0) = in.mousex - img1->w - img2->w;
+					clickedPoint(1) = in.mousey;
+					clickedPoint(2) = 1;
+					equiv3.addPoint(clickedPoint);
 		
 					// On retourne à aux listes 1
 					compteListe = 1;

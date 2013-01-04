@@ -17,6 +17,7 @@ namespace leydef{
 			void save(const std::string& filemane);
 			const Eigen::MatrixXd getData();
 			int getSize() const;
+			const Eigen::VectorXd getLastPoint(); 
 			void addPoint(const Eigen::VectorXd& newPoint);
 			void draw(SDL_Surface* screen, int offsetX);
 		

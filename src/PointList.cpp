@@ -65,6 +65,10 @@ namespace leydef{
 		return m_points.size();
 	}
 	
+	const Eigen::VectorXd PointList::getLastPoint(){
+		return m_points.back();
+	}
+	
 	void PointList::draw(SDL_Surface* screen, int offsetX){
 		for(std::vector<VectorXd>::iterator i=m_points.begin();i!=m_points.end();++i){
 			Eigen::VectorXd tmpVec = *i;
