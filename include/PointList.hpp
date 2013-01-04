@@ -13,6 +13,7 @@ namespace leydef{
 			PointList(uint32_t color);
 			~PointList();
 			void load(const std::string& filename);
+			void save(const std::string& filemane);
 			int getSize() const;
 			void addPoint(const Eigen::VectorXd& newPoint);
 		
