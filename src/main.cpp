@@ -274,6 +274,11 @@ int main(int argc, char *argv[]){
 		 }
 	 }
 	
+	/* Saving the new lists */
+	running1.save("input/customlist1.list");
+	running2.save("input/customlist2.list");
+	running3.save("input/customlist3.list");
+	
 	
 	/*******************************************
 	 * 	FREE RESOURCES
