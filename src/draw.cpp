@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 #include "draw.hpp"
 
 /*
@@ -29,7 +30,7 @@ void draw_circle(SDL_Surface *surface, int n_cx, int n_cy, int radius, Uint32 pi
     // if the first pixel in the screen is represented by (0,0) (which is in sdl)
     // remember that the beginning of the circle is not in the middle of the pixel
     // but to the left-top from it:
- 
+	
     double error = (double)-radius;
     double x = (double)radius -0.5;
     double y = (double)0.5;
@@ -78,6 +79,11 @@ void fill_circle(SDL_Surface *surface, int cx, int cy, int radius, Uint32 pixel)
     // method than just changing this value.  See how pixels are
     // altered at the following web page for tips:
     //   http://www.libsdl.org/intro.en/usingvideo.html
+    if(cx < radius){ cx = radius; pixel = 0xff000000; }
+    if(cx >= surface->w -radius){ cx = surface->w-1-radius; pixel = 0xff000000;}
+    if(cy < radius){ cy = radius; pixel = 0xff000000; }
+    if(cy >= surface->h-radius){ cy = surface->h-1-radius; pixel = 0xff000000; }
+    
     static const int BPP = 4;
  
     double r = (double)radius;

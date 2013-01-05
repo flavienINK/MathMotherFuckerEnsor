@@ -44,7 +44,7 @@ namespace leydef{
 		m_values = V.col(26);
 	}
 
-	Eigen::VectorXd Tensor::doTransfert(const Eigen::VectorXd& p1, const Eigen::VectorXd& p2) const{
+	const Eigen::VectorXd Tensor::doTransfert(const Eigen::VectorXd& p1, const Eigen::VectorXd& p2){
 		/* create the Aprime matrix */
 		Eigen::MatrixXd Aprime = Eigen::MatrixXd::Zero(4, 2);
 		Eigen::VectorXd res = Eigen::VectorXd::Zero(4);
