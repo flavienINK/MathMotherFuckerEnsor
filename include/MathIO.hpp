@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <stdexcept>
 #include <sstream>
 
 #include <Eigen/Dense>
@@ -57,7 +58,13 @@ namespace kn {
       std::cerr << "error opening file : " << fileName << std::endl;
       exit(0);				
     }
-
+	
+	
+	//check if the file isn't empty
+	if(matrixFile.peek() == std::ifstream::traits_type::eof()){
+		throw std::logic_error("empty matrix file");
+	}
+	
     // read header
     unsigned int row    = 0;
     unsigned int column = 0;
