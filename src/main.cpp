@@ -126,6 +126,9 @@ int main(int argc, char *argv[]){
 	 
 	 bool listCharged = false;
 	 bool tensorComputed = false;
+	 bool listRunningPointsSaved = false;
+	 bool listOriginsPointsSaved = false;
+	 int countArg = 0;
 	 
 	 /* Lists of points used for building the Tensor */
 	 leydef::PointList equiv1(colors[RED]);
@@ -137,8 +140,31 @@ int main(int argc, char *argv[]){
 	 leydef::PointList running2(colors[PURPLE]);
 	 leydef::PointList running3(colors[PURPLE]);
 	 
-	 //IF lists are inclued
-	 if (argc <= 7 && argc > 4){
+	 //IF lists are inclued 	
+ 	if (argc <= 6 && argc > 4)  
+	{
+		if (argv[4] == std::string("-s"))
+			listRunningPointsSaved = true;
+			
+		else if (argv[4] == std::string("-w"))
+			listOriginsPointsSaved = true;
+			
+		else if (argv[4] == std::string("-sw"))
+		{
+			listRunningPointsSaved = true;
+			listOriginsPointsSaved = true;
+		}
+		else
+		{
+			std::cerr<<"[!]-> Error : command " << argv[4] << " is unknow" << std::endl;
+			std::cerr<<"[!]-> Did you mean -s to save the currents points ?" << std::endl;
+			std::cerr<<"[!]-> See '-h' for more information on a specific command." << std::endl;
+			return EXIT_FAILURE;
+		}
+		countArg = 4;
+	}
+	else if (argc > 4)
+	{
 		//Chargement des listes
 		listCharged = true;
 		 
@@ -148,7 +174,17 @@ int main(int argc, char *argv[]){
 		 
 		tensorComputed = true;
 		tensor.compute(equiv1.getData(), equiv2.getData(), equiv3.getData());
-	}	
+		
+		if (argv[7] == std::string("-s"))
+		{
+			listRunningPointsSaved = true;
+			countArg = 7;
+		}
+	}
+	else
+	{
+	
+	}
 	
 	/**************************************
 	 *  DISPLAY LOOP
@@ -275,10 +311,18 @@ int main(int argc, char *argv[]){
 	 }
 	
 	/* Saving the new lists */
-	running1.save("input/customlist1.list");
-	running2.save("input/customlist2.list");
-	running3.save("input/customlist3.list");
-	
+	if (listRunningPointsSaved == true)
+	{
+		running1.save("output/" + std::string(argv[countArg+1]) + "-RunningList-1.list");
+		running2.save("output/" + std::string(argv[countArg+1]) + "-RunningList-2.list");
+		running3.save("output/" + std::string(argv[countArg+1]) + "-RunningList-3.list");
+	}
+	if (listOriginsPointsSaved == true)
+	{
+		 equiv1.save("input/" + std::string(argv[5]) + "-Equiv-1.list");
+		 equiv2.save("input/" + std::string(argv[5]) + "-Equiv-2.list");
+		 equiv3.save("input/" + std::string(argv[5]) + "-Equiv-3.list");
+	}
 	
 	/*******************************************
 	 * 	FREE RESOURCES
