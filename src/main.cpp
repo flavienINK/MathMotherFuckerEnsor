@@ -234,7 +234,7 @@ int main(int argc, char *argv[]){
 			if (compteListe == 1)
 			{
 				// On vérifie que le clic se situe bien dans l'image 1
-				if (in.mousex <= img1->w)
+				if (in.mousex < img1->w)
 				{
 					// On génère le premier point
 					clickedPoint(0) = in.mousex;
@@ -253,7 +253,7 @@ int main(int argc, char *argv[]){
 			else if (compteListe == 2) 
 			{
 				// On vérifie que le clic se situe bien dans l'image 2
-				if (in.mousex <= img1->w + img2->w && in.mousex > img1->w)
+				if (in.mousex < img1->w + img2->w && in.mousex >= img1->w)
 				{	
 					// On génère le second point
 					clickedPoint(0) = in.mousex - img1->w;
@@ -265,7 +265,7 @@ int main(int argc, char *argv[]){
 						compteListe++;
 					}else{
 						running2.addPoint(clickedPoint);
-						guessedPoint = tensor.doTransfert(running1.getLastPoint(), running2.getLastPoint());
+						guessedPoint = tensor.doTransfert(running1.getLastPoint(), running2.getLastPoint());						
 						running3.addPoint(guessedPoint);
 						compteListe = 1;
 					}						
@@ -274,7 +274,7 @@ int main(int argc, char *argv[]){
 			else
 			{
 				// On vérifie que le clic se situe bien dans l'image 3
-				if (in.mousex <= img1->w + img2->w + img3->w && in.mousex > img1->w + img2->w)
+				if (in.mousex < img1->w + img2->w + img3->w && in.mousex >= img1->w + img2->w)
 				{
 					clickedPoint(0) = in.mousex - img1->w - img2->w;
 					clickedPoint(1) = in.mousey;

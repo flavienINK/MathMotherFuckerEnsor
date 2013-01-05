@@ -12,7 +12,7 @@ namespace leydef{
 			Tensor();
 			~Tensor();
 			void compute(const Eigen::MatrixXd& list1, const Eigen::MatrixXd& list2, const Eigen::MatrixXd& list3);
-			Eigen::VectorXd doTransfert(const Eigen::VectorXd& p1, const Eigen::VectorXd& p2) const;
+			const Eigen::VectorXd doTransfert(const Eigen::VectorXd& p1, const Eigen::VectorXd& p2);
 			
 		private:
 			Eigen::VectorXd m_values;
