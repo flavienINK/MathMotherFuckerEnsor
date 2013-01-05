@@ -93,6 +93,12 @@ void displayHelp(){
 	std::cout<<std::endl;
 }
 
+void displayError(char * arg){
+	std::cerr<<"[!]-> Error : command " << std::string(arg) << " is unknow" << std::endl;
+	std::cerr<<"[!]-> Did you mean -s to save the currents points ?" << std::endl;
+	std::cerr<<"[!]-> See '-h' for more information on a specific command." << std::endl;
+}
+
 int main(int argc, char *argv[]){
 	/*******************************************************
 	* PROGRAM INITIALIZATION
@@ -185,12 +191,8 @@ int main(int argc, char *argv[]){
 			listOriginsPointsSaved = true;
 		}
 		else
-		{
-			std::cerr<<"[!]-> Error : command " << argv[4] << " is unknow" << std::endl;
-			std::cerr<<"[!]-> Did you mean -s to save the currents points ?" << std::endl;
-			std::cerr<<"[!]-> See '-h' for more information on a specific command." << std::endl;
-			return EXIT_FAILURE;
-		}
+			displayError(argv[4]);
+			
 		countArg = 4;
 	}
 	else if (argc > 4)
@@ -210,6 +212,8 @@ int main(int argc, char *argv[]){
 			listRunningPointsSaved = true;
 			countArg = 7;
 		}
+		else 
+			displayError(argv[7]);
 	}
 	else
 	{
