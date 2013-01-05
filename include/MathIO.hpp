@@ -62,7 +62,9 @@ namespace kn {
 	
 	//check if the file isn't empty
 	if(matrixFile.peek() == std::ifstream::traits_type::eof()){
-		throw std::logic_error("empty matrix file");
+		/* Return a void matrix */
+		M.resize(0,0);
+		return;
 	}
 	
     // read header
