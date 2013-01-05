@@ -352,15 +352,33 @@ int main(int argc, char *argv[]){
 	/* Saving the new lists */
 	if (listRunningPointsSaved == true)
 	{
-		running1.save("output/" + std::string(argv[countArg+1]) + "-RunningList-1.list");
-		running2.save("output/" + std::string(argv[countArg+1]) + "-RunningList-2.list");
-		running3.save("output/" + std::string(argv[countArg+1]) + "-RunningList-3.list");
+		if (argv[countArg+1] == NULL)
+		{		
+			running1.save("output/" + std::string("INK") + "-RunningList-1.list");
+			running2.save("output/" + std::string("INK") + "-RunningList-2.list");
+			running3.save("output/" + std::string("INK") + "-RunningList-3.list");
+		}
+		else 
+		{
+			running1.save("output/" + std::string(argv[countArg+1]) + "-RunningList-1.list");
+			running2.save("output/" + std::string(argv[countArg+1]) + "-RunningList-2.list");
+			running3.save("output/" + std::string(argv[countArg+1]) + "-RunningList-3.list");
+		}
 	}
 	if (listOriginsPointsSaved == true)
 	{
-		 equiv1.save("input/" + std::string(argv[5]) + "-Equiv-1.list");
-		 equiv2.save("input/" + std::string(argv[5]) + "-Equiv-2.list");
-		 equiv3.save("input/" + std::string(argv[5]) + "-Equiv-3.list");
+		if (argv[countArg+1] == NULL)
+		{	
+			equiv1.save("input/" + std::string("INK") + "-Equiv-1.list");
+			equiv2.save("input/" + std::string("INK") + "-Equiv-2.list");
+			equiv3.save("input/" + std::string("INK") + "-Equiv-3.list");
+		}
+		else
+		{
+			equiv1.save("input/" + std::string(argv[5]) + "-Equiv-1.list");
+			equiv2.save("input/" + std::string(argv[5]) + "-Equiv-2.list");
+			equiv3.save("input/" + std::string(argv[5]) + "-Equiv-3.list");
+		}
 	}
 	
 	/*******************************************
