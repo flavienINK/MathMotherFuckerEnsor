@@ -18,6 +18,13 @@ namespace leydef{
 			Eigen::VectorXd m_values;
 	};
 	
+	//Different kind of transfert (ex : TRANSF13 to click on image 1 and 3, and guess on image 2)
+	enum TransfertType{
+		TRANSF12,
+		TRANSF23,
+		TRANSF13
+	};
+	
 }
 
 #endif

@@ -70,6 +70,13 @@ enum Color{
 	PURPLE = 3
 };
 
+//flag to know what image was clicked
+enum ImgClicked{
+	IMG1,
+	IMG2,
+	IMG3
+};
+
 void displayHelp(){
 	std::cout<<std::endl;
 	std::cout<<"############################ TENSOR TRIFOCAL HELP ###############################"<<std::endl;
