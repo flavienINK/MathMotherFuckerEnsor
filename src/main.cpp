@@ -72,6 +72,7 @@ enum Color{
 
 //flag to know what image was clicked
 enum ImgClicked{
+	NOIMG,
 	IMG1,
 	IMG2,
 	IMG3
@@ -239,11 +240,14 @@ int main(int argc, char *argv[]){
 	 *  DISPLAY LOOP
 	 * **************************************/
 	 
-	int compteListe = 1;
+	int compteClic = 1;
 	 
 	Eigen::VectorXd clickedPoint(3);
 	Eigen::VectorXd guessedPoint(3);
-	 
+	
+	//flag de la dernière image cliquée
+	ImgClicked lastImgClic = NOIMG;
+	
 	Input in;
 	memset(&in,0,sizeof(in));
 	while(!in.key[SDLK_ESCAPE] && !in.quit)
@@ -285,62 +289,126 @@ int main(int argc, char *argv[]){
 			// On clique une fois, donc on remet à 0 l'état du bouton
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
 			
-			/* Evaluer sur quelle image on doit cliquer */
-			if (compteListe == 1)
-			{
-				// On vérifie que le clic se situe bien dans l'image 1
-				if (in.mousex < img1->w)
+			//if we click for the tensor or for the transfert
+			if(listCharged == false){
+				//Click for tensor
+				
+				/* Evaluer sur quelle image on doit cliquer */
+				if (compteClic == 1)
 				{
-					// On génère le premier point
-					clickedPoint(0) = in.mousex;
-					clickedPoint(1) = in.mousey;
-					clickedPoint(2) = 1;
-					
-					if(listCharged == false){
+					// On vérifie que le clic se situe bien dans l'image 1
+					if (in.mousex < img1->w)
+					{
+						// On génère le premier point
+						clickedPoint(0) = in.mousex;
+						clickedPoint(1) = in.mousey;
+						clickedPoint(2) = 1;
+						
 						equiv1.addPoint(clickedPoint);
-					}else{
-						running1.addPoint(clickedPoint);
+						compteClic++;
 					}
-					compteListe++;
 				}
-			}
-	
-			else if (compteListe == 2) 
-			{
-				// On vérifie que le clic se situe bien dans l'image 2
-				if (in.mousex < img1->w + img2->w && in.mousex >= img1->w)
-				{	
-					// On génère le second point
-					clickedPoint(0) = in.mousex - img1->w;
-					clickedPoint(1) = in.mousey;
-					clickedPoint(2) = 1;
-					
-					if (listCharged == false){
-						equiv2.addPoint(clickedPoint);
-						compteListe++;
-					}else{
-						running2.addPoint(clickedPoint);
-						guessedPoint = tensor.doTransfert(running1.getLastPoint(), running2.getLastPoint());						
-						running3.addPoint(guessedPoint);
-						compteListe = 1;
-					}						
-				}
-			}
-			else
-			{
-				// On vérifie que le clic se situe bien dans l'image 3
-				if (in.mousex < img1->w + img2->w + img3->w && in.mousex >= img1->w + img2->w)
+				else if (compteClic == 2) 
 				{
-					clickedPoint(0) = in.mousex - img1->w - img2->w;
-					clickedPoint(1) = in.mousey;
-					clickedPoint(2) = 1;
-					equiv3.addPoint(clickedPoint);
-		
-					// On retourne à aux listes 1
-					compteListe = 1;
+					// On vérifie que le clic se situe bien dans l'image 2
+					if (in.mousex < img1->w + img2->w && in.mousex >= img1->w)
+					{	
+						// On génère le second point
+						clickedPoint(0) = in.mousex - img1->w;
+						clickedPoint(1) = in.mousey;
+						clickedPoint(2) = 1;
+
+						equiv2.addPoint(clickedPoint);
+						compteClic++;					
+					}
+				}
+				else
+				{
+					// On vérifie que le clic se situe bien dans l'image 3
+					if (in.mousex >= img1->w + img2->w)
+					{
+						clickedPoint(0) = in.mousex - img1->w - img2->w;
+						clickedPoint(1) = in.mousey;
+						clickedPoint(2) = 1;
+						equiv3.addPoint(clickedPoint);
+			
+						// On retourne aux listes 1
+						compteClic = 1;
+					}
+				}
+			}else{
+				//click for transfert
+				//On génère le point cliqué
+				clickedPoint(0) = in.mousex;
+				clickedPoint(1) = in.mousey;
+				clickedPoint(2) = 1;
+				
+				//On vérifie dans quelle image il se trouve et on le met dans la bonne liste
+				if(clickedPoint(0) < img1->w){
+					//IMG1
+					//On vérifie que dernière image cliquée n'est pas elle même.
+					if(lastImgClic != IMG1){
+						running1.addPoint(clickedPoint);
+						
+						if(compteClic >=2){
+							//do transfert
+							if(lastImgClic == IMG2){
+								running3.addPoint(tensor.doTransfert(running1.getLastPoint(), running2.getLastPoint()));
+							}else if(lastImgClic == IMG3){
+								running2.addPoint(tensor.doTransfert(running1.getLastPoint(), running3.getLastPoint()));
+							}
+							lastImgClic = NOIMG;
+							compteClic = 1;
+						}else{
+							lastImgClic = IMG1;
+							compteClic++;
+						}
+					}
+				}else if(clickedPoint(0) < img1->w + img2->w && clickedPoint(0) >= img1->w){
+					//IMG2
+					//On vérifie que dernière image cliquée n'est pas elle même.
+					if(lastImgClic != IMG2){
+						clickedPoint(0)-= img1->w;
+						running2.addPoint(clickedPoint);
+						
+						if(compteClic >=2){
+							//do transfert
+							if(lastImgClic == IMG1){
+								running3.addPoint(tensor.doTransfert(running1.getLastPoint(), running2.getLastPoint()));
+							}else if(lastImgClic == IMG3){
+								running1.addPoint(tensor.doTransfert(running2.getLastPoint(), running3.getLastPoint()));
+							}
+							compteClic = 1;
+							lastImgClic = NOIMG;
+						}else{
+							lastImgClic = IMG2;
+							compteClic++;
+						}
+					}
+				}else if(clickedPoint(0) >= img1->w + img2->w){
+					//IMG3
+					//On vérifie que dernière image cliquée n'est pas elle même.
+					if(lastImgClic != IMG3){
+						clickedPoint(0)-= img1->w + img2->w;
+						running3.addPoint(clickedPoint);
+						
+						if(compteClic >=2){
+							//do transfert
+							if(lastImgClic == IMG1){
+								running2.addPoint(tensor.doTransfert(running1.getLastPoint(), running3.getLastPoint()));
+							}else if(lastImgClic == IMG2){
+								running1.addPoint(tensor.doTransfert(running2.getLastPoint(), running3.getLastPoint()));
+							}
+							lastImgClic = NOIMG;
+							compteClic = 1;
+						}else{
+							lastImgClic = IMG3;
+							compteClic++;
+						}
+					}
 				}
 			}
-		}	
+		}
 		
 		/* IDLE */
 		if(!tensorComputed && equiv1.getSize() >= NB_POINTS_NEEDED && equiv2.getSize() >= NB_POINTS_NEEDED && equiv3.getSize() >= NB_POINTS_NEEDED)
