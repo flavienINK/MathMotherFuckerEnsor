@@ -24,6 +24,7 @@ namespace leydef{
 			Eigen::VectorXd m_values;
 			const Eigen::VectorXd transfert12(const Eigen::VectorXd& p1, const Eigen::VectorXd& p2);
 			const Eigen::VectorXd transfert13(const Eigen::VectorXd& p1, const Eigen::VectorXd& p3);
+			const Eigen::VectorXd transfert23(const Eigen::VectorXd& p2, const Eigen::VectorXd& p3);
 	};	
 }
 
