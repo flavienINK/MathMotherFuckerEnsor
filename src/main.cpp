@@ -353,9 +353,9 @@ int main(int argc, char *argv[]){
 						if(compteClic >=2){
 							//do transfert
 							if(lastImgClic == IMG2){
-								running3.addPoint(tensor.doTransfert(running1.getLastPoint(), running2.getLastPoint()));
+								running3.addPoint(tensor.doTransfert(running1.getLastPoint(), running2.getLastPoint(), leydef::TRANSF12));
 							}else if(lastImgClic == IMG3){
-								running2.addPoint(tensor.doTransfert(running1.getLastPoint(), running3.getLastPoint()));
+								running2.addPoint(tensor.doTransfert(running1.getLastPoint(), running3.getLastPoint(), leydef::TRANSF13));
 							}
 							lastImgClic = NOIMG;
 							compteClic = 1;
@@ -374,9 +374,9 @@ int main(int argc, char *argv[]){
 						if(compteClic >=2){
 							//do transfert
 							if(lastImgClic == IMG1){
-								running3.addPoint(tensor.doTransfert(running1.getLastPoint(), running2.getLastPoint()));
+								running3.addPoint(tensor.doTransfert(running1.getLastPoint(), running2.getLastPoint(), leydef::TRANSF12));
 							}else if(lastImgClic == IMG3){
-								running1.addPoint(tensor.doTransfert(running2.getLastPoint(), running3.getLastPoint()));
+								running1.addPoint(tensor.doTransfert(running2.getLastPoint(), running3.getLastPoint(), leydef::TRANSF23));
 							}
 							compteClic = 1;
 							lastImgClic = NOIMG;
@@ -395,9 +395,9 @@ int main(int argc, char *argv[]){
 						if(compteClic >=2){
 							//do transfert
 							if(lastImgClic == IMG1){
-								running2.addPoint(tensor.doTransfert(running1.getLastPoint(), running3.getLastPoint()));
+								running2.addPoint(tensor.doTransfert(running1.getLastPoint(), running3.getLastPoint(), leydef::TRANSF13));
 							}else if(lastImgClic == IMG2){
-								running1.addPoint(tensor.doTransfert(running2.getLastPoint(), running3.getLastPoint()));
+								running1.addPoint(tensor.doTransfert(running2.getLastPoint(), running3.getLastPoint(), leydef::TRANSF23));
 							}
 							lastImgClic = NOIMG;
 							compteClic = 1;

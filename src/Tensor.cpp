@@ -43,8 +43,21 @@ namespace leydef{
 		/* The tensor */
 		m_values = V.col(26);
 	}
-
-	const Eigen::VectorXd Tensor::doTransfert(const Eigen::VectorXd& p1, const Eigen::VectorXd& p2){
+	
+	const Eigen::VectorXd Tensor::doTransfert(const Eigen::VectorXd& p1, const Eigen::VectorXd& p2, TransfertType type){
+		switch(type){
+			case TRANSF12:
+				return transfert12(p1, p2);
+				break;
+			
+			default:
+				return Eigen::VectorXd::Zero(3);
+				break;
+		}
+	}
+	
+	/* PRIVACY */
+	const Eigen::VectorXd Tensor::transfert12(const Eigen::VectorXd& p1, const Eigen::VectorXd& p2){
 		/* create the Aprime matrix */
 		Eigen::MatrixXd Aprime = Eigen::MatrixXd::Zero(4, 2);
 		Eigen::VectorXd res = Eigen::VectorXd::Zero(4);
