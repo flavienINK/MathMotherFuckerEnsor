@@ -110,9 +110,11 @@ int main(int argc, char *argv[]){
 	*******************************************************/
 	
 	//Check if the user is waiting for the help
-	if(argc>=2 && std::string(argv[1]) == "-h"){
-		displayHelp();
-		return EXIT_SUCCESS;
+	if(argc>=2){
+		if(std::string(argv[1]) == "-h"){
+			displayHelp();
+			return EXIT_SUCCESS;
+		}
 	}
 	
 	//Verification
@@ -212,13 +214,14 @@ int main(int argc, char *argv[]){
 		tensorComputed = true;
 		tensor.compute(equiv1.getData(), equiv2.getData(), equiv3.getData());
 		
-		if (argv[7] == std::string("-s"))
-		{
-			listRunningPointsSaved = true;
-			countArg = 7;
+		if(argc >=8){
+			if(argv[7] == std::string("-s")){
+				listRunningPointsSaved = true;
+				countArg = 7;
+			}else{
+				displayError(argv[7]);
+			}
 		}
-		else 
-			displayError(argv[7]);
 	}
 	else
 	{
